@@ -33,8 +33,7 @@
     }
   },
   "standard": {
-    "globals": [
-    ]
+    "globals": []
   },
   "repository": {
     "type": "git",
@@ -59,6 +58,7 @@
     "standard": "^11.0.1"
   },
   "dependencies": {
+    "endent": "^1.2.0",
     "es2040": "^1.2.3"
   }
 }

@@ -1,51 +1,70 @@
+const dent = require('endent')
+
 const KISYS3DMOD = process.env.KISYS3DMOD || '/usr/share/kicad/modules/packages3d/'
+
+const NOW = (Date.now() / 1000).toString(16).substring(0, 8)
+const NEWLINE = 'NEWLINE_NEWLINE_NEWLINE'
 
 module.exports = {
   Pcb
 }
 
-function Pcb () {
-  return `
+function Pcb (options) {
+  const {
+    tracks = []
+  } = options
+
+  return dent`
     (kicad_pcb
       ${Header({})}
-      ${General({})}
+      ${General({
+        tracks
+      })}
       ${Page({})}
       ${Layers({})}
       ${Setup({})}
       ${Nets({})}
       ${Modules({})}
       ${Graphics({})}
-      ${Tracks({})}
+      ${Tracks({
+        tracks
+      })}
       ${Zones({})}
     )
   `
+  // hack to have string '\n' in output s-expressionsto have string '\n' in output s-expressions
+  .replace(new RegExp(NEWLINE, 'g'), '\\n')
 }
 
 function Header (options) {
-  return `
+  return dent`
     (version 4)
     (host pcbnew "kicad-js")
   `
 }
 
 function General (options) {
-  return `
+  const {
+    tracks
+  } = options
+
+  return dent`
     (general
       (links 0)
       (no_connects 0)
       (area 104.572999 74.854999 178.510001 123.265001)
       (thickness 1.6)
-      (drawings 1)
-      (tracks 0)
-      (zones 0)
-      (modules 0)
-      (nets 1)
+      (drawings 6)
+      (tracks ${tracks.length})
+      (zones 1)
+      (modules 1)
+      (nets 3)
     )
   `
 }
 
 function Page (options) {
-  return `
+  return dent`
     (page A4)
     (title_block
       (title "Project Title")
@@ -54,7 +73,7 @@ function Page (options) {
 }
 
 function Layers (options) {
-  return `
+  return dent`
     (layers
       (0 F.Cu signal)
       (31 B.Cu signal)
@@ -75,7 +94,7 @@ function Layers (options) {
 }
 
 function Setup (options) {
-  return `
+  return dent`
     (setup
       (last_trace_width 0.254)
       (user_trace_width 0.1524)
@@ -144,7 +163,7 @@ function Setup (options) {
 }
 
 function Nets (options) {
-  return `
+  return dent`
     (net 0 "")
     (net 1 /SIGNAL)
     (net 2 GND)
@@ -160,14 +179,25 @@ function Nets (options) {
 }
 
 function Modules (options) {
+  return dent`
+    ${PinHeader_1x04_P254mm_Vertical({})}
+  `
 }
 
 // 
 // https://github.com/KiCad/kicad-footprints/blob/master/Connector_PinHeader_2.54mm.pretty/PinHeader_1x04_P2.54mm_Vertical.kicad_mod
 //
 function PinHeader_1x04_P254mm_Vertical (options) {
-  return `
-    (module PinHeader_1x04_P2.54mm_Vertical (layer F.Cu) (tedit 59FED5CC)
+  const position = { x: 0, y: 0 }
+  const rotation = 300
+
+  return dent`
+    (module
+      PinHeader_1x04_P2.54mm_Vertical
+      (layer F.Cu)
+      (tedit 59FED5CC)
+      (tstamp ${NOW})
+      (at ${position.x} ${position.y} ${rotation})
       (descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
       (tags "Through hole pin header THT 1x04 2.54mm single row")
       (fp_text reference REF** (at 0 -2.33) (layer F.SilkS)
@@ -208,7 +238,7 @@ function PinHeader_1x04_P254mm_Vertical (options) {
 }
 
 function Graphics (options) {
-  const fabNotes = `
+  const fabNotes = dent`
     FABRICATION NOTES
   
     1. THIS IS A 2 LAYER BOARD.
@@ -226,15 +256,14 @@ function Graphics (options) {
     11. MAX HOLE DIAMETER TOLERANCE OF +/- 0.003 INCH AFTER PLATING.
   `
 
-  return `
+  return dent`
     (gr_text
-      "${fabNotes}"
+      "${fabNotes.replace(/\n/g, NEWLINE)}"
       (at 113.4872 93.2688)
       (layer Dwgs.User)
       (effects (font (size 2.54 2.54) (thickness 0.254)) (justify left))
     )
-
-    (gr_text TEST (at 62 31) (layer top_side.Cu)
+    (gr_text TEST (at 62 31) (layer F.Cu)
       (effects (font (size 1.5 1.5) (thickness 0.3)))
     )
     (gr_line (start 58 42) (end 58 29) (angle 90) (layer Edge.Cuts) (width 0.15))
@@ -245,21 +274,30 @@ function Graphics (options) {
 }
 
 function Tracks (options) {
-  return `
-    (segment (start 61.0616 36.8808) (end 61.0616 34.5186) (width 0.254) (layer bottom_side.Cu) (net 1))
-    (segment (start 61.0616 34.5186) (end 62.23 33.3502) (width 0.254) (layer bottom_side.Cu) (net 1) (tstamp 5127A159))
-    (segment (start 69.85 33.3502) (end 70.993 33.3502) (width 0.5) (layer bottom_side.Cu) (net 2))
-    (segment (start 71.2216 33.5788) (end 71.2216 36.8808) (width 0.5) (layer bottom_side.Cu) (net 2) (tstamp 5127A156))
-    (segment (start 70.993 33.3502) (end 71.2216 33.5788) (width 0.5) (layer bottom_side.Cu) (net 2) (tstamp 5127A155))
-  `
+  const {
+    tracks,
+    nets
+  } = options
+
+  return tracks
+    .map(track => dent`
+      (segment
+        (start ${track.start[0]} ${track.start[1]})
+        (end ${track.end[0]} ${track.end[1]})
+        (width ${track.width})
+        (layer ${track.layer})
+        (net ${track.net})
+      )
+    `)
+    .join('\n')
 }
 
 function Zones (options) {
-  return `
+  return dent`
     (zone
       (net 2)
       (net_name GND)
-      (layer bottom_side.Cu)
+      (layer B.Cu)
       (tstamp 5127A1B2)
       (hatch edge 0.508)
       (connect_pads (clearance 0.2))
@@ -271,5 +309,5 @@ function Zones (options) {
         )
       )
     )
-  `
+`
 }
