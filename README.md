@@ -1,18 +1,24 @@
 # kicad-js
 
-generate [kicad files](http://kicad-pcb.org/help/file-formats/) in javascript
+_work in progress_
+
+generate [Kicad files](http://kicad-pcb.org/help/file-formats/) from JavaScript
 
 ```shell
 npm install --save kicad-js
 ```
 
-## example
+## demo
 
-TODO
+with [Kicad](http://kicad-pcb.org/) installed:
 
-## usage
-
-TODO
+```shell
+git clone git://github.com/ahdinosaur/kicad-js
+cd kicad-js
+npm install
+node example
+kicad example/index.pro
+```
 
 ## license
 
