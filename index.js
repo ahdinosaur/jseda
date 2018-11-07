@@ -12,10 +12,11 @@ module.exports = {
 
 function Pcb (options) {
   var {
-    page = {},
-    tracks = [],
+    modules = [],
     nets = [],
     net_classes = [],
+    page = {},
+    tracks = [],
     zones = []
   } = options
 
@@ -25,6 +26,7 @@ function Pcb (options) {
     (kicad_pcb
       ${Header()}
       ${General({
+        modules,
         nets,
         tracks,
         zones
@@ -36,7 +38,10 @@ function Pcb (options) {
         nets,
         net_classes
       })}
-      ${Modules({})}
+      ${Modules({
+        modules,
+        nets
+      })}
       ${Graphics({})}
       ${Tracks({
         tracks,
@@ -61,6 +66,7 @@ function Header () {
 
 function General (options) {
   const {
+    modules,
     nets,
     tracks,
     zones
@@ -75,7 +81,7 @@ function General (options) {
       (drawings 6)
       (tracks ${tracks.length})
       (zones ${zones.length})
-      (modules 1)
+      (modules ${modules.length})
       (nets ${nets.length})
     )
   `
@@ -215,26 +221,47 @@ function Nets (options) {
   `
 }
 
+const components = {
+  PinHeader_1x04_P254mm_Vertical
+}
+
 function Modules (options) {
-  return dent`
-    ${PinHeader_1x04_P254mm_Vertical({})}
-  `
+  const {
+    modules,
+    nets
+  } = options
+
+  return modules
+    .map((module, module_index) => {
+      const Component = components[module.component]
+      assert.ok(Component, `modules[${module_index}].component is not a valid component: ${module.component}`)
+
+      const pads = module.pads.map((pad, pad_index) => {
+        const net_index = nets.findIndex(net => net.name === pad.net)
+        assert(net_index > 0, `modules[${module_index}].pads[${pad_index}].net not found: ${pad.net}`)
+
+        return Object.assign({}, pad, {
+          net_index
+        })
+      })
+
+      module = Object.assign({}, module, { pads })
+
+      return Component(module)
+    })
+    .join('\n')
 }
 
 // 
 // https://github.com/KiCad/kicad-footprints/blob/master/Connector_PinHeader_2.54mm.pretty/PinHeader_1x04_P2.54mm_Vertical.kicad_mod
 //
-function PinHeader_1x04_P254mm_Vertical (options) {
-  const position = { x: 0, y: 0 }
-  const rotation = 300
-
+function PinHeader_1x04_P254mm_Vertical (module) {
   return dent`
     (module
       PinHeader_1x04_P2.54mm_Vertical
       (layer F.Cu)
       (tedit 59FED5CC)
-      (tstamp ${NOW})
-      (at ${position.x} ${position.y} ${rotation})
+      (at ${module.position.x} ${module.position.y} ${module.rotation})
       (descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
       (tags "Through hole pin header THT 1x04 2.54mm single row")
       (fp_text reference REF** (at 0 -2.33) (layer F.SilkS)
@@ -258,10 +285,22 @@ function PinHeader_1x04_P254mm_Vertical (options) {
       (fp_line (start -1.8 9.4) (end 1.8 9.4) (layer F.CrtYd) (width 0.05))
       (fp_line (start 1.8 9.4) (end 1.8 -1.8) (layer F.CrtYd) (width 0.05))
       (fp_line (start 1.8 -1.8) (end -1.8 -1.8) (layer F.CrtYd) (width 0.05))
-      (pad 1 thru_hole rect (at 0 0) (size 1.7 1.7) (drill 1.0) (layers *.Cu *.Mask))
-      (pad 2 thru_hole oval (at 0 2.54) (size 1.7 1.7) (drill 1.0) (layers *.Cu *.Mask))
-      (pad 3 thru_hole oval (at 0 5.08) (size 1.7 1.7) (drill 1.0) (layers *.Cu *.Mask))
-      (pad 4 thru_hole oval (at 0 7.62) (size 1.7 1.7) (drill 1.0) (layers *.Cu *.Mask))
+      (pad 1 thru_hole rect (at 0 0) (size 1.7 1.7) (drill 1.0)
+        (layers *.Cu *.Mask)
+        (net ${module.pads[0].net_index} ${module.pads[0].net})
+      )
+      (pad 2 thru_hole oval (at 0 2.54) (size 1.7 1.7) (drill 1.0)
+        (layers *.Cu *.Mask)
+        (net ${module.pads[1].net_index} ${module.pads[1].net})
+      )
+      (pad 3 thru_hole oval (at 0 5.08) (size 1.7 1.7) (drill 1.0)
+        (layers *.Cu *.Mask)
+        (net ${module.pads[2].net_index} ${module.pads[2].net})
+      )
+      (pad 4 thru_hole oval (at 0 7.62) (size 1.7 1.7) (drill 1.0)
+        (layers *.Cu *.Mask)
+        (net ${module.pads[3].net_index} ${module.pads[3].net})
+      )
       (fp_text user %R (at 0 3.81 90) (layer F.Fab)
         (effects (font (size 1 1) (thickness 0.15)))
       )

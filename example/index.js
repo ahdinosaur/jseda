@@ -46,6 +46,23 @@ const tracks = [
   },
 ]
 
+const modules = [
+  {
+    component: 'PinHeader_1x04_P254mm_Vertical',
+    position: {
+      x: 50,
+      y: 50
+    },
+    rotation: 210,
+    pads: [
+      { net: 'GND' },
+      { net: 'GND' },
+      { net: '+5V' },
+      { net: '+5V' }
+    ]
+  }
+]
+
 const nets = [
   {
     name: '+5V'
@@ -105,10 +122,11 @@ const zones = [
 ]
 
 const pcb = Pcb({
-  page,
-  tracks,
+  modules,
   nets,
   net_classes,
+  page,
+  tracks,
   zones
 })
 
