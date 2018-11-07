@@ -362,8 +362,8 @@ function Tracks (options) {
 
       return dent`
         (segment
-          (start ${track.start[0]} ${track.start[1]})
-          (end ${track.end[0]} ${track.end[1]})
+          (start ${track.start.x} ${track.start.y})
+          (end ${track.end.x} ${track.end.y})
           (width ${track.width})
           (layer ${track.layer})
           (net ${net_index})
