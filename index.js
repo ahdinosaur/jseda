@@ -12,6 +12,7 @@ module.exports = {
 
 function Pcb (options) {
   var {
+    graphics = [],
     modules = [],
     nets = [],
     net_classes = [],
@@ -26,6 +27,7 @@ function Pcb (options) {
     (kicad_pcb
       ${Header()}
       ${General({
+        graphics,
         modules,
         nets,
         tracks,
@@ -42,7 +44,9 @@ function Pcb (options) {
         modules,
         nets
       })}
-      ${Graphics({})}
+      ${Graphics({
+        graphics
+      })}
       ${Tracks({
         tracks,
         nets
@@ -78,7 +82,7 @@ function General (options) {
       (no_connects 0)
       (area 104.572999 74.854999 178.510001 123.265001)
       (thickness 1.6)
-      (drawings 6)
+      (drawings ${graphics.length})
       (tracks ${tracks.length})
       (zones ${zones.length})
       (modules ${modules.length})
@@ -261,7 +265,7 @@ function PinHeader_1x04_P254mm_Vertical (module) {
       PinHeader_1x04_P2.54mm_Vertical
       (layer F.Cu)
       (tedit 59FED5CC)
-      (at ${module.position.x} ${module.position.y} ${module.rotation})
+      (at ${module.at.x} ${module.at.y} ${module.at.angle})
       (descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
       (tags "Through hole pin header THT 1x04 2.54mm single row")
       (fp_text reference REF** (at 0 -2.33) (layer F.SilkS)
@@ -314,39 +318,63 @@ function PinHeader_1x04_P254mm_Vertical (module) {
 }
 
 function Graphics (options) {
-  const fabNotes = dent`
-    FABRICATION NOTES
-  
-    1. THIS IS A 2 LAYER BOARD.
-    2. EXTERNAL LAYERS SHALL HAVE 1 OZ COPPER.
-    3. MATERIAL: FR4 AND 0.062 INCH +/- 10% THICK.
-    4. BOARDS SHALL BE ROHS COMPLIANT.
-    5. MANUFACTURE IN ACCORDANCE WITH IPC-6012 CLASS 2
-    6. MASK: BOTH SIDES OF THE BOARD SHALL HAVE SOLDER MASK (ANY COLOR) OVER BARE COPPER.
-    7. SILK: BOTH SIDES OF THE BOARD SHALL HAVE WHITE SILKSCREEN. DO NOT PLACE SILK OVER BARE COPPER.
-    8. FINISH: ENIG.
-    9. MINIMUM TRACE WIDTH - 0.006 INCH.
-       MINIMUM SPACE - 0.006 INCH.
-       MINIMUM HOLE DIA - 0.013 INCH.
-    10. MAX HOLE PLACEMENT TOLERANCE OF +/- 0.003 INCH.
-    11. MAX HOLE DIAMETER TOLERANCE OF +/- 0.003 INCH AFTER PLATING.
-  `
+  const {
+    graphics
+  } = options
 
-  return dent`
-    (gr_text
-      "${fabNotes.replace(/\n/g, NEWLINE)}"
-      (at 113.4872 93.2688)
-      (layer Dwgs.User)
-      (effects (font (size 2.54 2.54) (thickness 0.254)) (justify left))
-    )
-    (gr_text TEST (at 62 31) (layer F.Cu)
-      (effects (font (size 1.5 1.5) (thickness 0.3)))
-    )
-    (gr_line (start 58 42) (end 58 29) (angle 90) (layer Edge.Cuts) (width 0.15))
-    (gr_line (start 74 42) (end 58 42) (angle 90) (layer Edge.Cuts) (width 0.15))
-    (gr_line (start 74 29) (end 74 42) (angle 90) (layer Edge.Cuts) (width 0.15))
-    (gr_line (start 58 29) (end 74 29) (angle 90) (layer Edge.Cuts) (width 0.15))
-  `
+  return graphics
+    .map((graphic, graphic_index) => {
+      switch (graphic.type) {
+        case 'text': return dent`
+          (gr_text
+            "${graphic.content.replace(/\n/g, NEWLINE)}"
+            (at ${graphic.at.x} ${graphic.at.y})
+            (layer ${graphic.layer})
+            (effects
+              ${Object.keys(graphic.effects)
+              .map(effectKey => {
+                const effectValue = graphic.effects[effectKey]
+                switch (effectKey) {
+                  case 'font': return dent`
+                    (font
+                      ${Object.keys(effectValue)
+                      .map(fontEffectKey => {
+                        const fontEffectValue = effectValue[fontEffectKey]
+                        switch (fontEffectKey) {
+                          case 'size': return dent`
+                            (size ${fontEffectValue.x} ${fontEffectValue.y})
+                          `
+                          default: return dent`
+                            (${fontEffectKey} ${fontEffectValue})
+                          `
+                        }
+                      })
+                      .join('\n')}
+                    )
+                  `
+                  default: return dent`
+                    (${effectKey} ${effectValue})
+                  `
+                }
+              })
+              .join('\n')}
+            )
+          )
+        `
+        case 'line': return `
+          (gr_line
+            (start ${graphic.start.x} ${graphic.start.y})
+            (end ${graphic.end.x} ${graphic.end.y})
+            (angle ${graphic.angle})
+            (layer ${graphic.layer})
+            (width ${graphic.width})
+          )
+        `
+        default:
+          assert.fail(`graphics[${graphic_index}].type is unexpected: ${graphic.type}`)
+      }
+    })
+    .join('\n')
 }
 
 function Tracks (options) {

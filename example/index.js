@@ -1,5 +1,6 @@
 const { writeFileSync } = require('fs')
 const { join } = require('path')
+const dent = require('endent')
 
 const { Pcb } = require('../')
 
@@ -49,17 +50,107 @@ const tracks = [
 const modules = [
   {
     component: 'PinHeader_1x04_P254mm_Vertical',
-    position: {
+    at: {
       x: 50,
-      y: 50
+      y: 50,
+      angle: 210
     },
-    rotation: 210,
     pads: [
       { net: 'GND' },
       { net: 'GND' },
       { net: '+5V' },
       { net: '+5V' }
     ]
+  }
+]
+
+const fab_notes = dent`
+  FABRICATION NOTES
+
+  1. THIS IS A 2 LAYER BOARD.
+  2. EXTERNAL LAYERS SHALL HAVE 1 OZ COPPER.
+  3. MATERIAL: FR4 AND 0.062 INCH +/- 10% THICK.
+  4. BOARDS SHALL BE ROHS COMPLIANT.
+  5. MANUFACTURE IN ACCORDANCE WITH IPC-6012 CLASS 2
+  6. MASK: BOTH SIDES OF THE BOARD SHALL HAVE SOLDER MASK (ANY COLOR) OVER BARE COPPER.
+  7. SILK: BOTH SIDES OF THE BOARD SHALL HAVE WHITE SILKSCREEN. DO NOT PLACE SILK OVER BARE COPPER.
+  8. FINISH: ENIG.
+  9. MINIMUM TRACE WIDTH - 0.006 INCH.
+     MINIMUM SPACE - 0.006 INCH.
+     MINIMUM HOLE DIA - 0.013 INCH.
+  10. MAX HOLE PLACEMENT TOLERANCE OF +/- 0.003 INCH.
+  11. MAX HOLE DIAMETER TOLERANCE OF +/- 0.003 INCH AFTER PLATING.
+`
+
+const graphics = [
+  {
+    type: 'text',
+    content: fab_notes,
+    at: {
+      x: 113.4872,
+      y: 93.2688
+    },
+    layer: 'Dwgs.User',
+    effects: {
+      font: {
+        size: {
+          x: 2.54,
+          y: 2.54
+        },
+        thickness: 0.254
+      },
+      justify: 'left'
+    }
+  },
+  {
+    type: 'text',
+    content: 'TEST',
+    at: {
+      x: 62,
+      y: 31
+    },
+    layer: 'F.Cu',
+    effects: {
+      font: {
+        size: {
+          x: 1.5,
+          y: 1.5
+        },
+        thickness: 0.3
+      }
+    }
+  },
+  {
+    type: 'line',
+    start: { x: 58, y: 42 },
+    end: { x: 58, y: 29 },
+    angle: 90,
+    layer: 'Edge.Cuts',
+    width: 0.15
+  },
+  {
+    type: 'line',
+    start: { x: 74, y: 42 },
+    end: { x: 58, y: 42 },
+    angle: 90,
+    layer: 'Edge.Cuts',
+    width: 0.15
+  },
+  {
+    type: 'line',
+    start: { x: 74, y: 29 },
+    end: { x: 74, y: 42 },
+    angle: 90,
+    layer: 'Edge.Cuts',
+    width: 0.15
+  },
+  {
+    type: 'line',
+    start: { x: 58, y: 29 },
+    end: { x: 74, y: 29 },
+    angle: 90,
+    layer: 'Edge.Cuts',
+    width: 0.15
   }
 ]
 
@@ -122,6 +213,7 @@ const zones = [
 ]
 
 const pcb = Pcb({
+  graphics,
   modules,
   nets,
   net_classes,
