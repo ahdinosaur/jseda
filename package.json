@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "description": "generate kicad files in javascript",
   "main": "index.js",
+  "bin": "bin.js",
   "scripts": {
-    "start": "node-dev example",
+    "example": "node bin.js pcb example/index.js example/example.kicad_pcb",
     "test:lint": "standard",
     "test:deps": "dependency-check . && dependency-check . --extra --no-dev",
     "test:node": "ava",
@@ -39,12 +40,12 @@
     "dependency-check": "^3.1.0",
     "husky": "^0.14.3",
     "lint-staged": "^7.0.5",
-    "node-dev": "^3.1.3",
     "npm-run-all": "^4.0.1",
     "nyc": "^11.7.1",
     "standard": "^11.0.1"
   },
   "dependencies": {
-    "endent": "^1.2.0"
+    "endent": "^1.2.0",
+    "minimist": "^1.2.0"
   }
 }

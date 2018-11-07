@@ -70,6 +70,7 @@ function Header () {
 
 function General (options) {
   const {
+    graphics,
     modules,
     nets,
     tracks,
@@ -361,7 +362,7 @@ function Graphics (options) {
             )
           )
         `
-        case 'line': return `
+        case 'line': return dent`
           (gr_line
             (start ${graphic.start.x} ${graphic.start.y})
             (end ${graphic.end.x} ${graphic.end.y})

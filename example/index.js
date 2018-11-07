@@ -1,8 +1,4 @@
-const { writeFileSync } = require('fs')
-const { join } = require('path')
 const dent = require('endent')
-
-const { Pcb } = require('../')
 
 const page = {
   type: 'A4',
@@ -212,7 +208,7 @@ const zones = [
   }
 ]
 
-const pcb = Pcb({
+module.exports = {
   graphics,
   modules,
   nets,
@@ -220,10 +216,4 @@ const pcb = Pcb({
   page,
   tracks,
   zones
-})
-
-writeFileSync(
-  join(__dirname, 'example.kicad_pcb'),
-  pcb,
-  'utf8'
-)
+}

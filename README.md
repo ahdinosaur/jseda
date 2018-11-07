@@ -7,7 +7,7 @@ _work in progress_
 given JavaScript objects, returns [valid Kicad files](http://kicad-pcb.org/help/file-formats/)
 
 ```shell
-npm install --save jseda
+npm install --g jseda
 ```
 
 ## demo
@@ -18,7 +18,7 @@ with [Kicad](http://kicad-pcb.org/) installed:
 git clone git://github.com/ahdinosaur/jseda
 cd jseda
 npm install
-node example
+npm run example
 kicad example/index.pro
 ```
 
