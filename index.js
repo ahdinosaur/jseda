@@ -1,3 +1,4 @@
+const assert = require('assert')
 const dent = require('endent')
 
 const KISYS3DMOD = process.env.KISYS3DMOD || '/usr/share/kicad/modules/packages3d/'
@@ -10,33 +11,48 @@ module.exports = {
 }
 
 function Pcb (options) {
-  const {
-    tracks = []
+  var {
+    page = {},
+    tracks = [],
+    nets = [],
+    net_classes = [],
+    zones = []
   } = options
+
+  nets.unshift({ name: '""' })
 
   return dent`
     (kicad_pcb
-      ${Header({})}
+      ${Header()}
       ${General({
-        tracks
+        nets,
+        tracks,
+        zones
       })}
-      ${Page({})}
+      ${Page(page)}
       ${Layers({})}
       ${Setup({})}
-      ${Nets({})}
+      ${Nets({
+        nets,
+        net_classes
+      })}
       ${Modules({})}
       ${Graphics({})}
       ${Tracks({
-        tracks
+        tracks,
+        nets
       })}
-      ${Zones({})}
+      ${Zones({
+        nets,
+        zones
+      })}
     )
   `
   // hack to have string '\n' in output s-expressionsto have string '\n' in output s-expressions
   .replace(new RegExp(NEWLINE, 'g'), '\\n')
 }
 
-function Header (options) {
+function Header () {
   return dent`
     (version 4)
     (host pcbnew "kicad-js")
@@ -45,7 +61,9 @@ function Header (options) {
 
 function General (options) {
   const {
-    tracks
+    nets,
+    tracks,
+    zones
   } = options
 
   return dent`
@@ -56,18 +74,18 @@ function General (options) {
       (thickness 1.6)
       (drawings 6)
       (tracks ${tracks.length})
-      (zones 1)
+      (zones ${zones.length})
       (modules 1)
-      (nets 3)
+      (nets ${nets.length})
     )
   `
 }
 
 function Page (options) {
   return dent`
-    (page A4)
+    (page ${options.type || 'A4'})
     (title_block
-      (title "Project Title")
+      (title ${options.title || 'untitled'})
     )
   `
 }
@@ -163,18 +181,37 @@ function Setup (options) {
 }
 
 function Nets (options) {
+  const {
+    nets,
+    net_classes
+  } = options
+
   return dent`
-    (net 0 "")
-    (net 1 /SIGNAL)
-    (net 2 GND)
-    (net_class Default "This is the default net class."
-      (clearance 0.254)
-      (trace_width 0.254)
-      (via_dia 0.6858)
-      (via_drill 0.3302)
-      (uvia_dia 0.6858)
-      (uvia_drill 0.3302)
-    )
+    ${nets
+    .map((net, net_index) => dent`
+      (net ${net_index} ${net.name})
+    `)
+    .join('\n')
+    }
+    ${net_classes
+    .map(net_class => dent`
+      (net_class ${net_class.name} "${net_class.description}"
+        (clearance ${net_class.clearance})
+        (trace_width ${net_class.trace_width})
+        (via_dia ${net_class.via_dia})
+        (via_drill ${net_class.via_drill})
+        (uvia_dia ${net_class.via_dia})
+        (uvia_drill ${net_class.via_drill})
+        ${net_class.nets
+        .map(net => dent`
+          (add_net ${net})
+        `)
+        .join('\n')
+        }
+      )
+    `)
+    .join('\n')
+    }
   `
 }
 
@@ -275,39 +312,75 @@ function Graphics (options) {
 
 function Tracks (options) {
   const {
-    tracks,
-    nets
+    nets,
+    tracks
   } = options
 
   return tracks
-    .map(track => dent`
-      (segment
-        (start ${track.start[0]} ${track.start[1]})
-        (end ${track.end[0]} ${track.end[1]})
-        (width ${track.width})
-        (layer ${track.layer})
-        (net ${track.net})
-      )
-    `)
+    .map((track, track_index) => {
+      const net_index = nets.findIndex(net => net.name === track.net)
+      assert(net_index > 0, `tracks[${track_index}].net not found: ${track.net}`)
+
+      return dent`
+        (segment
+          (start ${track.start[0]} ${track.start[1]})
+          (end ${track.end[0]} ${track.end[1]})
+          (width ${track.width})
+          (layer ${track.layer})
+          (net ${net_index})
+        )
+      `
+    })
     .join('\n')
 }
 
 function Zones (options) {
-  return dent`
-    (zone
-      (net 2)
-      (net_name GND)
-      (layer B.Cu)
-      (tstamp 5127A1B2)
-      (hatch edge 0.508)
-      (connect_pads (clearance 0.2))
-      (min_thickness 0.1778)
-      (fill (arc_segments 16) (thermal_gap 0.254) (thermal_bridge_width 0.4064))
-      (polygon
-        (pts
-          (xy 59 30) (xy 73 30) (xy 73 41) (xy 59 41)
+  const {
+    nets,
+    zones
+  } = options
+
+  return zones
+    .map((zone, zone_index) => {
+      const net_index = nets.findIndex(net => net.name === zone.net)
+      assert(net_index > 0, `zones[${zone_index}].net not found: ${zone.net}`)
+
+      const hatch_type = Object.keys(zone.hatch)[0]
+      return dent`
+        (zone
+          (net ${net_index})
+          (net_name ${zone.net})
+          (layer ${zone.layer})
+          (hatch ${hatch_type} ${zone.hatch[hatch_type]})
+          (connect_pads
+            ${Object.keys(zone.connect_pads)
+            .map(key => dent`
+              (${key} ${zone.connect_pads[key]})
+            `)
+            .join('\n')
+            }
+          )
+          (min_thickness ${zone.min_thickness})
+          (fill 
+            ${Object.keys(zone.fill)
+            .map(key => dent`
+              (${key} ${zone.fill[key]})
+            `)
+            .join('\n')
+            }
+          )
+          (polygon
+            (pts
+              ${zone.polygon.pts
+              .map(pt => dent`
+                (xy ${pt.x} ${pt.y})
+              `)
+              .join('\n')
+              }
+            )
+          )
         )
-      )
-    )
-`
+      `
+    })
+    .join('\n')
 }

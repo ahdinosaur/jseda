@@ -3,4 +3,4 @@ npm-debug.log*
 /coverage
 /.nyc_output
 
-/example/index.kicad_pcb
+/example/example.kicad_pcb
