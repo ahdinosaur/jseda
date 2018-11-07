@@ -1,11 +1,13 @@
-# kicad-js
+# jseda
 
 _work in progress_
 
-generate [Kicad files](http://kicad-pcb.org/help/file-formats/) from JavaScript
+[electronic design automation (EDA)](https://en.wikipedia.org/wiki/Electronic_design_automation) in JavaScript! :tada:
+
+given JavaScript objects, returns [valid Kicad files](http://kicad-pcb.org/help/file-formats/)
 
 ```shell
-npm install --save kicad-js
+npm install --save jseda
 ```
 
 ## demo
@@ -13,12 +15,14 @@ npm install --save kicad-js
 with [Kicad](http://kicad-pcb.org/) installed:
 
 ```shell
-git clone git://github.com/ahdinosaur/kicad-js
-cd kicad-js
+git clone git://github.com/ahdinosaur/jseda
+cd jseda
 npm install
 node example
 kicad example/index.pro
 ```
+
+see the demo JavaScript source at [./example/index.js](./example/index.js)
 
 ## license
 

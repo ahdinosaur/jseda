@@ -1,5 +1,5 @@
 {
-  "name": "kicad-js",
+  "name": "jseda",
   "version": "0.0.0",
   "description": "generate kicad files in javascript",
   "main": "index.js",
@@ -25,15 +25,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ahdinosaur/kicad-js.git"
+    "url": "git+https://github.com/ahdinosaur/jseda.git"
   },
   "keywords": [],
   "author": "Mikey <michael.williams@enspiral.com> (https://dinosaur.is)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/ahdinosaur/kicad-js/issues"
+    "url": "https://github.com/ahdinosaur/jseda/issues"
   },
-  "homepage": "https://github.com/ahdinosaur/kicad-js#readme",
+  "homepage": "https://github.com/ahdinosaur/jseda#readme",
   "devDependencies": {
     "ava": "^0.25.0",
     "dependency-check": "^3.1.0",
