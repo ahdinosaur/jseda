@@ -238,11 +238,9 @@ function Modules (options) {
 
   return modules
     .map((module, module_index) => {
-      if (typeof module.component === 'string') {
-        var Component = components[module.component]
-      } else {
-        var Compenent = module.component
-      }
+      var Component = typeof module.component === 'string'
+        ? components[module.component]
+        : module.component
       assert.equal(typeof Component, 'function', `modules[${module_index}].component is not a valid component: ${module.component}`)
 
       const pads = module.pads.map((pad, pad_index) => {
