@@ -96,7 +96,7 @@ function Page (options) {
   return dent`
     (page ${options.type || 'A4'})
     (title_block
-      (title ${options.title || 'untitled'})
+      (title "${options.title || 'untitled'}")
     )
   `
 }
