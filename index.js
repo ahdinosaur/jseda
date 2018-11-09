@@ -238,8 +238,12 @@ function Modules (options) {
 
   return modules
     .map((module, module_index) => {
-      const Component = components[module.component]
-      assert.ok(Component, `modules[${module_index}].component is not a valid component: ${module.component}`)
+      if (typeof module.component === 'string') {
+        var Component = components[module.component]
+      } else {
+        var Compenent = module.component
+      }
+      assert.equal(typeof Component, 'function', `modules[${module_index}].component is not a valid component: ${module.component}`)
 
       const pads = module.pads.map((pad, pad_index) => {
         const net_index = nets.findIndex(net => net.name === pad.net)
