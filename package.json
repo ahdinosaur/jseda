@@ -1,6 +1,6 @@
 {
   "name": "jseda",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "generate kicad files in javascript",
   "main": "index.js",
   "bin": "bin.js",
