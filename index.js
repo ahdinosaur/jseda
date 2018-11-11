@@ -44,9 +44,7 @@ function Pcb (options) {
         modules,
         nets
       })}
-      ${Graphics({
-        graphics
-      })}
+      ${Graphics(graphics)}
       ${Tracks({
         tracks,
         nets
@@ -226,10 +224,6 @@ function Nets (options) {
   `
 }
 
-const components = {
-  PinHeader_1x04_P254mm_Vertical
-}
-
 function Modules (options) {
   const {
     modules,
@@ -238,10 +232,8 @@ function Modules (options) {
 
   return modules
     .map((module, module_index) => {
-      var Component = typeof module.component === 'string'
-        ? components[module.component]
-        : module.component
-      assert.equal(typeof Component, 'function', `modules[${module_index}].component is not a valid component: ${module.component}`)
+      assert.equal(typeof module, 'object', `modules[${module_index}] is not a valid module: ${module}`)
+      assert.equal(typeof module.component, 'object', `modules[${module_index}].component is not a valid component: ${module.component}`)
 
       const pads = module.pads.map((pad, pad_index) => {
         const net_index = nets.findIndex(net => net.name === pad.net)
@@ -254,7 +246,7 @@ function Modules (options) {
 
       module = Object.assign({}, module, { pads })
 
-      return Component(module)
+      return Module(module)
     })
     .join('\n')
 }
@@ -262,69 +254,49 @@ function Modules (options) {
 // 
 // https://github.com/KiCad/kicad-footprints/blob/master/Connector_PinHeader_2.54mm.pretty/PinHeader_1x04_P2.54mm_Vertical.kicad_mod
 //
-function PinHeader_1x04_P254mm_Vertical (module) {
+function Module (module) {
   return dent`
     (module
-      PinHeader_1x04_P2.54mm_Vertical
-      (layer F.Cu)
-      (tedit 59FED5CC)
-      (at ${module.at.x} ${module.at.y} ${module.at.angle})
-      (descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
-      (tags "Through hole pin header THT 1x04 2.54mm single row")
-      (fp_text reference REF** (at 0 -2.33) (layer F.SilkS)
-        (effects (font (size 1 1) (thickness 0.15)))
-      )
-      (fp_text value PinHeader_1x04_P2.54mm_Vertical (at 0 9.95) (layer F.Fab)
-        (effects (font (size 1 1) (thickness 0.15)))
-      )
-      (fp_line (start -0.635 -1.27) (end 1.27 -1.27) (layer F.Fab) (width 0.1))
-      (fp_line (start 1.27 -1.27) (end 1.27 8.89) (layer F.Fab) (width 0.1))
-      (fp_line (start 1.27 8.89) (end -1.27 8.89) (layer F.Fab) (width 0.1))
-      (fp_line (start -1.27 8.89) (end -1.27 -0.635) (layer F.Fab) (width 0.1))
-      (fp_line (start -1.27 -0.635) (end -0.635 -1.27) (layer F.Fab) (width 0.1))
-      (fp_line (start -1.33 8.95) (end 1.33 8.95) (layer F.SilkS) (width 0.12))
-      (fp_line (start -1.33 1.27) (end -1.33 8.95) (layer F.SilkS) (width 0.12))
-      (fp_line (start 1.33 1.27) (end 1.33 8.95) (layer F.SilkS) (width 0.12))
-      (fp_line (start -1.33 1.27) (end 1.33 1.27) (layer F.SilkS) (width 0.12))
-      (fp_line (start -1.33 0) (end -1.33 -1.33) (layer F.SilkS) (width 0.12))
-      (fp_line (start -1.33 -1.33) (end 0 -1.33) (layer F.SilkS) (width 0.12))
-      (fp_line (start -1.8 -1.8) (end -1.8 9.4) (layer F.CrtYd) (width 0.05))
-      (fp_line (start -1.8 9.4) (end 1.8 9.4) (layer F.CrtYd) (width 0.05))
-      (fp_line (start 1.8 9.4) (end 1.8 -1.8) (layer F.CrtYd) (width 0.05))
-      (fp_line (start 1.8 -1.8) (end -1.8 -1.8) (layer F.CrtYd) (width 0.05))
-      (pad 1 thru_hole rect (at 0 0) (size 1.7 1.7) (drill 1.0)
-        (layers *.Cu *.Mask)
-        (net ${module.pads[0].net_index} ${module.pads[0].net})
-      )
-      (pad 2 thru_hole oval (at 0 2.54) (size 1.7 1.7) (drill 1.0)
-        (layers *.Cu *.Mask)
-        (net ${module.pads[1].net_index} ${module.pads[1].net})
-      )
-      (pad 3 thru_hole oval (at 0 5.08) (size 1.7 1.7) (drill 1.0)
-        (layers *.Cu *.Mask)
-        (net ${module.pads[2].net_index} ${module.pads[2].net})
-      )
-      (pad 4 thru_hole oval (at 0 7.62) (size 1.7 1.7) (drill 1.0)
-        (layers *.Cu *.Mask)
-        (net ${module.pads[3].net_index} ${module.pads[3].net})
-      )
-      (fp_text user %R (at 0 3.81 90) (layer F.Fab)
-        (effects (font (size 1 1) (thickness 0.15)))
-      )
-      (model ${KISYS3DMOD}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_1x04_P2.54mm_Vertical.wrl
-        (at (xyz 0 0 0))
-        (scale (xyz 1 1 1))
-        (rotate (xyz 0 0 0))
-      )
+      "${module.component.name}"
+      (layer ${module.layer})
+      (at ${module.at.x || 0} ${module.at.y || 0} ${module.at.angle || 0})
+      (desc "${module.component.description || ''}")
+      (tags "${module.component.tags || ''}")
+      ${Graphics(module.component.graphics(module.graphics))}
+      ${module.component.pads
+        .map((component_pad, pad_index) => {
+          const module_pad = module.pads[pad_index]
+          return dent`
+            (pad
+              ${pad_index + 1}
+              ${component_pad.type}
+              ${component_pad.shape}
+              (at ${component_pad.at.x} ${component_pad.at.y})
+              (size ${component_pad.size.x} ${component_pad.size.y})
+              (drill ${component_pad.drill})
+              (layers ${component_pad.layers})
+              (net ${module_pad.net_index} ${module_pad.net})
+            )
+          `
+        })
+        .join('\n')
+      }
+      ${module.component.model != null
+        ? dent`
+          (model
+            ${KISYS3DMOD}/${module.component.model.path}
+            (at (xyz ${module.component.model.at.x} ${module.component.model.at.y} ${module.component.model.at.z}))
+            (scale (xyz ${module.component.model.at.x} ${module.component.model.at.y} ${module.component.model.at.z}))
+            (rotate (xyz ${module.component.model.at.x} ${module.component.model.at.y} ${module.component.model.at.z}))
+          )
+        `
+        : ''
+      }
     )
   `
 }
 
-function Graphics (options) {
-  const {
-    graphics
-  } = options
-
+function Graphics (graphics) {
   return graphics
     .map((graphic, graphic_index) => {
       switch (graphic.type) {
