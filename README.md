@@ -18,8 +18,7 @@ with [Kicad](http://kicad-pcb.org/) installed:
 git clone git://github.com/ahdinosaur/jseda
 cd jseda
 npm install
-npm run example
-kicad example/index.pro
+npm start
 ```
 
 see the demo JavaScript source at [./example/index.js](./example/index.js)

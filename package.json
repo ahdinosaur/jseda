@@ -5,7 +5,8 @@
   "main": "index.js",
   "bin": "bin.js",
   "scripts": {
-    "example": "node bin.js pcb example/index.js example/example.kicad_pcb",
+    "start": "npm run pcb && kicad ./example/example.pro",
+    "pcb": "node bin.js pcb ./example ./example/example.kicad_pcb",
     "test:lint": "standard",
     "test:deps": "dependency-check . && dependency-check . --extra --no-dev",
     "test:node": "ava",
@@ -46,6 +47,8 @@
   },
   "dependencies": {
     "endent": "^1.2.0",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "sexprs": "^1.1.1",
+    "stringify-object": "^3.3.0"
   }
 }

@@ -3,20 +3,19 @@
 const { argv, cwd } = process
 const { join } = require('path')
 const assert = require('assert')
-const { writeFileSync } = require('fs')
+const { readFileSync, writeFileSync } = require('fs')
 const dent = require('endent')
 const parse_args = require('minimist')
 
-const { Pcb } = require('./')
+const Jseda = require('./')
+const jseda = Jseda()
 
 var args = parse_args(argv.slice(2))
 var command_name = args._[0]
 var input_file = args._[1]
 var output_file = args._[2]
 
-var commands = {
-  pcb: Pcb
-}
+var commands = jseda
 
 main()
 
@@ -32,15 +31,19 @@ function main () {
     return
   }
 
-  try {
-    var input = require(join(cwd(), input_file))
-  } catch (err) {
-    if (err.code === 'MODULE_NOT_FOUND') {
-      console.error(`jseda: input file not found: ${input_file}`)
-      console.log(usage())
-      return
-    } else {
-      throw err
+  if (command_name === 'json' || command_name === 'js') {
+    var input = readFileSync(input_file, 'utf8')
+  } else {
+    try {
+      var input = require(join(cwd(), input_file))
+    } catch (err) {
+      if (err.code === 'MODULE_NOT_FOUND') {
+        console.error(`jseda: input file not found: ${input_file}`)
+        console.log(usage())
+        return
+      } else {
+        throw err
+      }
     }
   }
 
@@ -60,7 +63,7 @@ function usage () {
       Commands:
 
         - pcb
-
+        - json
 
       Examples:
 
