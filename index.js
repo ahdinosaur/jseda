@@ -68,9 +68,6 @@ function Jseda (options = {}) {
       start: {
         args: ['x', 'y']
       },
-      track: {
-        hasMany: true
-      },
       user_trace_width: {
         hasMany: true
       },
@@ -156,7 +153,7 @@ function Jseda (options = {}) {
           net_class: net_classes,
           net: nets,
           module: Modules({ modules, nets }),
-          track: Tracks({ nets, tracks }),
+          segment: Tracks({ nets, tracks }),
           zone: Zones({ nets, zones })
         },
         Graphics({ prefix: 'gr', graphics })
