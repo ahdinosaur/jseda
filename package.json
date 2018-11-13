@@ -48,7 +48,7 @@
   "dependencies": {
     "endent": "^1.2.0",
     "minimist": "^1.2.0",
-    "sexprs": "^1.1.1",
+    "sexprs": "^1.1.3",
     "stringify-object": "^3.3.0"
   }
 }

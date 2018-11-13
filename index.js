@@ -21,6 +21,9 @@ function Jseda (options = {}) {
       at: {
         args: ['x', 'y', 'angle']
       },
+      center: {
+        args: ['x', 'y']
+      },
       end: {
         args: ['x', 'y']
       },
@@ -211,6 +214,19 @@ function Module (module) {
         return Object.assign(
           {},
           component_pad,
+          (
+            component_pad != null &&
+            module.at != null &&
+            module.at.angle != null
+          )
+          ? {
+            at: Object.assign(
+              {},
+              component_pad.at,
+              { angle: module.at.angle }
+            )
+          }
+          : {},
           {
             number: pad_index + 1,
             net: module_pad.net
