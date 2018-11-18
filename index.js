@@ -34,11 +34,17 @@ function Jseda (options = {}) {
       fp_line: {
         hasMany: true
       },
+      fp_circle: {
+        hasMany: true
+      },
       gr_text: {
         args: ['content'],
         hasMany: true
       },
       gr_line: {
+        hasMany: true
+      },
+      gr_circle: {
         hasMany: true
       },
       model: {
