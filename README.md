@@ -4,7 +4,7 @@ _work in progress_
 
 [electronic design automation (EDA)](https://en.wikipedia.org/wiki/Electronic_design_automation) in JavaScript! :tada:
 
-given JavaScript objects, returns [valid Kicad files](http://kicad-pcb.org/help/file-formats/)
+given JavaScript objects, returns [valid Kicad files](http://kicad.org/help/file-formats/)
 
 ```shell
 npm install --g jseda
@@ -12,7 +12,7 @@ npm install --g jseda
 
 ## demo
 
-with [Kicad](http://kicad-pcb.org/) installed:
+with [Kicad](http://kicad.org/) installed:
 
 ```shell
 git clone git://github.com/ahdinosaur/jseda
